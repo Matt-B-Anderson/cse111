@@ -23,7 +23,7 @@ doing any of the following:
 2025-04-11       3      Wrote load_emotion_data(), test_load_emotion_data(), calculate_emotion_stats(), test_calculate_emotion_stats().
 2025-04-12       4      Wrote view_emotion_history() and troubleshot varius errors.
 2025-04-14       4      Added try, except blocks. Polished up functions and varified everything works as it should.
-
+2025-04-15       2      Updated test to class following best practices using unittest
 
 2. In Canvas, submit this completed text file, your Python program, your
 Python test file, and any project data files such as .txt and .csv files and

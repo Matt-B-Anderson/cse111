@@ -64,13 +64,15 @@ def calculate_emotion_stats():
     
     emotions = [emotion for _, emotion in data]
     counter = Counter(emotions)
-    most_common = counter.most_common(1)[0] if counter else ("None", 0)
+    
     
     print("Emotion Frequency:")
     for emotion, count in counter.items():
         print(f"{emotion}: {count}")
         
+    most_common = counter.most_common(1)[0] if counter else ("None", 0)    
     print(f"Most Common Emotion: {most_common[0]} ({most_common[1]} times)")
+    return counter
     
 if __name__ == "__main__":
     while True:

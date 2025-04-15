@@ -1,42 +1,79 @@
+from datetime import date
 import unittest
 from unittest.mock import patch, mock_open
-import emotional_state_tracker as est
-import datetime
-
+from io import StringIO
+import emotional_state_tracker as tracker
 
 class TestEmotionalStateTracker(unittest.TestCase):
 
-    @patch("builtins.input", return_value="happy")
-    @patch("builtins.open", new_callable=mock_open)
-    def test_log_emotions(self, mock_file, mock_input):
-        est.log_emotions()
-        today = datetime.date.today().isoformat()
-        mock_file().write.assert_called_with(f"{today},happy\n")
+    def test_log_emotions(self):
+        """Test that logging an emotion writes the correct date and emotion to the log file."""
+        fixed_date = date(2025, 1, 1)
+        test_emotion = "happy"
+        expected_date_str = fixed_date.isoformat()
+        m = mock_open()
+
+        with patch.object(tracker, 'get_today_date', return_value=fixed_date), \
+            patch('builtins.open', m), \
+            patch('builtins.input', return_value=test_emotion):
+            result = tracker.log_emotions()
+
+        m.assert_called_once_with("emotion_log.txt", "a")
+        handle = m()
+        written_content = "".join(call.args[0] for call in handle.write.call_args_list)
+        self.assertIn(expected_date_str, written_content)
+        self.assertIn(test_emotion, written_content)
+        self.assertIsNone(result)
+
+    def test_calculate_emotion_stats(self):
+        """Test that emotion statistics are calculated correctly from the log data."""
+        sample_content = "2025-01-01,happy\n2025-01-01,sad\n2025-01-02,happy\n"
+        m = mock_open(read_data=sample_content)
+
+        with patch('builtins.open', m):
+            stats = tracker.calculate_emotion_stats()
+
+        m.assert_called_once_with("emotion_log.txt", "r")
+        self.assertIsInstance(stats, dict)
+        self.assertEqual(len(stats), 2)
+        self.assertEqual(stats.get("happy"), 2)
+        self.assertEqual(stats.get("sad"), 1)
 
     def test_load_emotion_data(self):
-        mock_data = "2025-04-14,happy\n2025-04-15,sad\n"
-        with patch("builtins.open", mock_open(read_data=mock_data)):
-            with patch("os.path.exists", return_value=True):
-                data = est.load_emotion_data()
-                self.assertEqual(len(data), 2)
-                self.assertEqual(data[0][1], "happy")
-                self.assertEqual(data[1][1], "sad")
+        """Test that loading emotion data returns the correct list of date/emotion entries."""
+        sample_content = "2025-01-01,happy\n2025-01-02,sad\n"
+        m = mock_open(read_data=sample_content)
+
+        with patch('builtins.open', m):
+            data = tracker.load_emotion_data()
+
+        m.assert_called_once_with("emotion_log.txt", "r")
+        self.assertIsInstance(data, list)
+        self.assertEqual(len(data), 2)
+        self.assertEqual(data[0], (date(2025, 1, 1), "happy"))
+        self.assertEqual(data[1], (date(2025, 1, 2), "sad"))
 
     def test_get_user_input(self):
-        with patch("builtins.input", return_value="excited"):
-            self.assertEqual(est.get_user_input("Test: "), "excited")
+        """Test that get_user_input() returns the user input string and uses the correct prompt."""
+        user_input_value = "Calm"
+        prompt_text = "How are you feeling today? "
 
-    @patch("emotional_state_tracker.load_emotion_data")
-    def test_calculate_emotion_stats(self, mock_load_data):
-        mock_load_data.return_value = [
-            (datetime.date(2025, 4, 14), "happy"),
-            (datetime.date(2025, 4, 15), "happy"),
-            (datetime.date(2025, 4, 16), "sad"),
-        ]
-        with patch("builtins.print") as mock_print:
-            est.calculate_emotion_stats()
-            mock_print.assert_any_call("Most Common Emotion: happy (2 times)")
+        with patch('builtins.input', return_value=user_input_value) as mock_input:
+            result = tracker.get_user_input(prompt_text)
+            mock_input.assert_called_once_with(prompt_text)
 
+        self.assertEqual(result, user_input_value)
+
+    def test_log_emotions_rejects_numeric(self):
+        """Test that log_emotions() rejects emotion inputs containing numbers."""
+        invalid_inputs = ["sad2", "123"]
+        for bad_emotion in invalid_inputs:
+            with patch('builtins.input', return_value=bad_emotion), \
+                patch('sys.stdout', new_callable=StringIO) as mock_stdout:
+                result = tracker.log_emotions()
+                output = mock_stdout.getvalue()
+                self.assertIn("Invalid input. Emotion must not contain numbers.", output)
+                self.assertIsNone(result)
 
 if __name__ == "__main__":
     unittest.main()
