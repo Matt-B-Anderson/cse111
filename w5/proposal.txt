@@ -1,0 +1,58 @@
+1. Program Title
+Emotional State Tracker
+2. Program Description
+The Daily Mood Tracker is a command-line tool that allows users to log and analyze their mood over time. Users input their mood each day (e.g., happy, sad, anxious, excited), and the program stores these entries in a file. It also includes functionality to view mood history, calculate the most common mood, and display how moods have changed over a specified range of dates.
+This project is focused on trying to help individuals be more aware of their mental health, and even possibly provide a good reference for those that are in therapy.
+3. Learning Objectives
+Use try/except blocks.
+
+
+Read from and write to text files.
+
+
+Practice using lists and dictionaries.
+
+
+Use loops.
+
+
+Implement functions.
+
+
+Write unit tests
+
+
+4. Modules Used
+DateTime
+OS
+unittest
+
+
+5. Function Names
+log_emotions(): Prompts the user for today’s emotions and stores them in a file.
+
+
+view_emotion_history(): Displays past emotion entries.
+
+
+calculate_emotion_stats(): Analyzes emotion frequency and trends.
+
+
+get_user_input(prompt): Gets validated input from the user.
+
+
+load_emotion_data(): Reads data from the file.
+
+
+6. Test Function Names
+test_log_emotions():
+
+
+test_calculate_emotion_stats():
+
+
+test_load_emotion_data():
+
+
+test_get_user_input(): 
+
